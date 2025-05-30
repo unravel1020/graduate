@@ -1,0 +1,8 @@
+org\example\common\Result.class
+org\example\exception\GlobalExceptionHandler.class
+org\example\SpringbootApplication.class
+org\example\entity\Admin.class
+org\example\controller\WebController.class
+org\example\service\AdminService.class
+org\example\mapper\AdminMapper.class
+org\example\controller\AdminController.class

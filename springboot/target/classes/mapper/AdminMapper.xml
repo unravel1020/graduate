@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.example.springboot.mapper.AdminMapper">
+    <!-- 管理员登录相关 -->
+    <select id="getAdminByUsername" resultType="org.example.springboot.entity.User">
+        SELECT * FROM user WHERE username = #{username} AND role = 'ADMIN'
+    </select>
+
+    <select id="login" resultType="org.example.springboot.entity.User">
+        SELECT * FROM user WHERE username = #{username} AND password = #{password} AND role = 'ADMIN'
+    </select>
+
+    <update id="updatePassword">
+        UPDATE user SET password = #{newPassword} WHERE username = #{username} AND role = 'ADMIN'
+    </update>
+
+    <!-- 用户管理 -->
+    <select id="getAllUsers" resultType="org.example.springboot.entity.User">
+        SELECT * FROM user WHERE role = 'USER'
+    </select>
+
+    <select id="getUserByStudentId" resultType="org.example.springboot.entity.User">
+        SELECT * FROM user WHERE student_id = #{studentId} AND role = 'USER'
+    </select>
+
+    <insert id="insertUser" parameterType="org.example.springboot.entity.User">
+        INSERT INTO user (username, password, real_name, email, phone, role, status, student_id, create_time, update_time)
+        VALUES (#{username}, #{password}, #{realName}, #{email}, #{phone}, 'USER', #{status}, #{studentId}, NOW(), NOW())
+    </insert>
+
+    <delete id="deleteUserByStudentId">
+        DELETE FROM user WHERE student_id = #{studentId} AND role = 'USER'
+    </delete>
+
+    <update id="updateUser" parameterType="org.example.springboot.entity.User">
+        UPDATE user
+        SET real_name = #{realName},
+            email = #{email},
+            phone = #{phone},
+            status = #{status},
+            update_time = NOW()
+        WHERE student_id = #{studentId} AND role = 'USER'
+    </update>
+
+    <delete id="batchDeleteUsers">
+        DELETE FROM user WHERE student_id IN
+        <foreach collection="list" item="studentId" open="(" separator="," close=")">
+            #{studentId}
+        </foreach>
+        AND role = 'USER'
+    </delete>
+
+    <select id="findAll" resultType="org.example.springboot.entity.Admin">
+        SELECT * FROM admin
+        ORDER BY create_time DESC
+    </select>
+    
+    <select id="getById" resultType="org.example.springboot.entity.Admin">
+        SELECT * FROM admin WHERE id = #{id}
+    </select>
+    
+    <select id="findByUsername" resultType="org.example.springboot.entity.Admin">
+        SELECT * FROM admin WHERE username = #{username}
+    </select>
+    
+    <insert id="insert" parameterType="org.example.springboot.entity.Admin" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO admin (username, password, real_name, email, phone, role, status, create_time, update_time)
+        VALUES (#{username}, #{password}, #{realName}, #{email}, #{phone}, #{role}, #{status}, NOW(), NOW())
+    </insert>
+    
+    <update id="update" parameterType="org.example.springboot.entity.Admin">
+        UPDATE admin
+        SET password = #{password},
+            real_name = #{realName},
+            email = #{email},
+            phone = #{phone},
+            role = #{role},
+            status = #{status},
+            update_time = NOW()
+        WHERE id = #{id}
+    </update>
+    
+    <delete id="deleteById">
+        DELETE FROM admin WHERE id = #{id}
+    </delete>
+</mapper> 

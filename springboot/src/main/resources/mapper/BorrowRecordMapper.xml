@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.example.springboot.mapper.BorrowRecordMapper">
+    
+    <select id="findByUserId" resultType="org.example.springboot.entity.BorrowRecord">
+        SELECT * FROM borrow_record WHERE user_id = #{userId}
+        ORDER BY create_time DESC
+    </select>
+    
+    <select id="getById" resultType="org.example.springboot.entity.BorrowRecord">
+        SELECT * FROM borrow_record WHERE id = #{id}
+    </select>
+    
+    <insert id="insert" parameterType="org.example.springboot.entity.BorrowRecord" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO borrow_record (user_id, book_id, borrow_time, due_time, status, create_time, update_time)
+        VALUES (#{userId}, #{bookId}, #{borrowTime}, #{dueTime}, #{status}, NOW(), NOW())
+    </insert>
+    
+    <update id="update" parameterType="org.example.springboot.entity.BorrowRecord">
+        UPDATE borrow_record
+        SET return_time = #{returnTime},
+            status = #{status},
+            update_time = NOW()
+        WHERE id = #{id}
+    </update>
+    
+    <select id="findAll" resultType="org.example.springboot.entity.BorrowRecord">
+        SELECT * FROM borrow_record
+        ORDER BY create_time DESC
+    </select>
+    
+    <select id="findOverdue" resultType="org.example.springboot.entity.BorrowRecord">
+        SELECT * FROM borrow_record
+        WHERE status = 'BORROWED'
+        AND due_time &lt; NOW()
+        ORDER BY due_time ASC
+    </select>
+    
+</mapper> 

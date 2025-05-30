@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>图书馆数字孪生平台</title>
+    <link rel="stylesheet" href="css/reset.css">
+    <link rel="stylesheet" href="css/index.css">
+    <script src="./js/jquery-3.6.1.min.js"></script>
+    <script src="./js/conver.min.js"></script>
+</head>
+
+<body style="background: #204267FF">
+    <header class="bg_header">
+        <div class="header">
+            <nav class="left">
+                <div class="head-item" onclick="library1()">临潼图书馆</div>
+                <div class="head-item" onclick="library2()">金花图书馆</div>
+                <div class="head-item" onclick="library3()">座位管理</div>
+                <div class="head-item" onclick="library4()">总理</div>
+            </nav>
+            <div class="center">
+                <span class="head_title">
+                    西安工程大学图书馆数字孪生平台
+                </span>
+            </div>
+            <nav class="right">
+                <div class="head-item" onclick="reset()">reset</div>
+                <div class="head-item" onclick="nnnn()">图书馆仓库</div>
+                <div class="head-item" onclick="nnnn()">行政楼</div>
+               <!-- <div class="head-item" onclick="toggleLabels()">切换提示标</div> -->
+                <div id="labelsDiv"></div>
+            </nav>
+        </div>
+    </header>
+    <div class="show">
+        <video id="myVideo" width="1920" height="1080" autoplay muted></video>
+    </div>
+
+    
+    <script>
+        let queryParams = {
+            vehicleId: null,
+            plateNo: null,
+            timeStamp: null,
+            lon: null,
+            lat: null,
+            ele: null,
+            speed: null,
+            heading: null,
+            wid: null,
+            len: null,
+            hei: null,
+            basicVehicleClass: null,
+            fuelType: null,
+            bFrameValid: 1
+        }
+
+    function goToSeatManage() {
+        window.location.href = '/seat-manage'; // 跳转路径视你的前端项目路由而定
+    }
+
+    function goToOverview() {
+        window.location.href = '/overview'; // 同上
+    }
+
+
+       let reminderLabels = 'open';
+
+        let equipmentNameList = [];
+
+        let fansDetailInfo;
+        let jsonData = [];
+
+        $(document).ready(function () {
+
+            connectWebSocket();
+        });
+
+        let wss;
+        function connectWebSocket() {
+            if ("WebSocket" in window) {
+                wss = new WebSocket("ws://127.0.0.1:9658/");
+                wss.onopen = function () {
+                    console.log("WebSocket连接成功!")
+                };
+            
+                wss.onerror = function (evt) {
+                    console.error('WebSocket连接发生错误: ', evt);
+                };
+
+                wss.onclose = function () {
+                    console.log("WebSocket已关闭!")
+                };
+            } else {
+                alert("您的浏览器不支持 WebSocket!");
+            }
+        }
+
+        //图书馆1
+        function library1() {
+            let json = { "key": "图书馆1", "value": "115415" };
+            wss.send(JSON.stringify(json));
+        }
+
+        //图书馆2
+        function library2() {
+            let json = { "key": "图书馆2", "value": "2025" };
+            wss.send(JSON.stringify(json));
+        }
+
+        //图书馆3
+        function library3() {
+            let json = { "key": "图书馆3", "value": "8848" };
+            wss.send(JSON.stringify(json));
+            wss.send(type);
+        }
+
+        function reset() {
+            let json = { "key": "reset", "value": "reset" };
+            wss.send(JSON.stringify(json));
+        }
+
+        //预留功能
+        function nnnn() {
+           
+        }
+
+        /**
+         * 页面渲染
+         */
+        let jmuxer = new JMuxer({
+            node: 'myVideo',
+            mode: 'video',
+            flushingTime: 0,
+            fps: 60,
+            debug: false,
+            onError: function (data) {
+                if (/Safari/.test(navigator.userAgent) && /Apple Computer/.test(navigator.vendor)) {
+                    jmuxer.reset();
+                }
+            }
+        });
+
+
+        //推流及远程控制
+        const ws = new WebSocket('ws://127.0.0.1:8882/');
+
+        ws.binaryType = 'arraybuffer';
+
+        ws.addEventListener('open', (event) => {
+            console.log('WebSocket 连接已建立', event);
+            listenToMouseEvents();
+        });
+
+        ws.addEventListener('message', (event) => {
+            // console.log(event.data)
+            jmuxer.feed({
+                video: new Uint8Array(event.data)
+            });
+        });
+
+        ws.addEventListener('error', (event) => {
+            console.error('WebSocket连接发生错误', event);
+        });
+
+        ws.addEventListener('close', (event) => {
+            console.log('WebSocket连接已经关闭', event);
+        });
+
+        function listenToMouseEvents() {
+            document.addEventListener('contextmenu', event => event.preventDefault());
+            document.addEventListener("mousedown", handleMouseEvent);
+            document.addEventListener("mouseup", handleMouseEvent);
+            document.addEventListener("wheel", handleMouseEvent);
+            document.addEventListener("keydown", handleKeyboardEvent);
+            document.addEventListener("keyup", handleKeyboardEvent);
+            document.addEventListener("mousemove", handleMouseEvent);
+            document.addEventListener("dblclick", handleMouseEvent);
+            document.getElementById("road_condition").addEventListener("change", (event) => {
+                if (event.target.checked) {
+                    document.addEventListener("mousedown", handleMouseEvent);
+                    document.addEventListener("mouseup", handleMouseEvent);
+                    document.addEventListener("wheel", handleMouseEvent);
+                    document.addEventListener("dblclick", handleMouseEvent);
+                    document.addEventListener("keydown", handleKeyboardEvent);
+                    document.addEventListener("keyup", handleKeyboardEvent);
+                }
+            });
+            document.getElementById("road_property").addEventListener("change", (event) => {
+                if (event.target.checked) {
+                    document.removeEventListener("mousedown", handleMouseEvent);
+                    document.removeEventListener("mouseup", handleMouseEvent);
+                    document.removeEventListener("wheel", handleMouseEvent);
+                    document.addEventListener("dblclick", handleMouseEvent);
+                    document.removeEventListener("keydown", handleKeyboardEvent);
+                    document.removeEventListener("keyup", handleKeyboardEvent);
+                }
+            });
+            document.getElementById("slider").addEventListener("input", function () {
+                document.removeEventListener("mousemove", handleMouseEvent);
+            });
+            document.getElementById("increase").addEventListener("click", function () {
+
+                document.removeEventListener("mousedown", handleMouseEvent);
+                document.removeEventListener("mouseup", handleMouseEvent);
+                document.addEventListener("dblclick", handleMouseEvent);
+                document.removeEventListener("wheel", handleMouseEvent);
+                document.removeEventListener("keydown", handleKeyboardEvent);
+                document.removeEventListener("keyup", handleKeyboardEvent);
+
+            });
+            document.getElementById("decrease").addEventListener("click", function () {
+                document.removeEventListener("mousedown", handleMouseEvent);
+                document.removeEventListener("mouseup", handleMouseEvent);
+                document.addEventListener("dblclick", handleMouseEvent);
+                document.removeEventListener("wheel", handleMouseEvent);
+                document.removeEventListener("keydown", handleKeyboardEvent);
+                document.removeEventListener("keyup", handleKeyboardEvent);
+            });
+        }
+
+        function handleMouseEvent(event) {
+            switch (event.type) {
+                case "mousedown":
+                    switch (event.button) {
+                        case 0:
+                            document.addEventListener("mousemove", handleMouseMove);
+                            break;
+                        case 2:
+                            document.addEventListener("mousemove", handleMouseMove);
+                            break;
+                    }
+                    break;
+                case "mouseup":
+                    switch (event.button) {
+                        case 0:
+                            document.removeEventListener("mousemove", handleMouseMove);
+                            break;
+                        case 2:
+                            document.removeEventListener("mousemove", handleMouseMove);
+                            break;
+                    }
+                    break;
+                case "mousemove":
+                    switch (event.button) {
+                        case 0:
+                            document.removeEventListener("mousemove", handleMouseMove);
+                            break;
+                        case 2:
+                            document.removeEventListener("mousemove", handleMouseMove);
+                            break;
+                    }
+                    break;
+                case "click":
+                    switch (event.button) {
+                        case 0:
+                            document.removeEventListener("mousemove", handleMouseMove);
+                            break;
+                        case 2:
+                            document.removeEventListener("mousemove", handleMouseMove);
+                            break;
+                    }
+                    break;
+            }
+            const data = {
+                type: event.type,
+                key: '',
+                button: event.button,
+                pageX: event.pageX,
+                pageY: event.pageY - 108,
+                deltaY: event.deltaY ? event.deltaY : '',
+            };
+            ws.send(JSON.stringify(data));
+        }
+
+        function handleMouseMove(event) {
+            const data = {
+                type: event.type,
+                key: '',
+                button: '',
+                pageX: event.pageX,
+                pageY: event.pageY - 108,
+                deltaY: '',
+            };
+            ws.send(JSON.stringify(data));
+        }
+
+        function handleKeyboardEvent(event) {
+            const data = {
+                type: event.type,
+                key: event.key,
+                button: '',
+                pageX: '',
+                pageY: '',
+                deltaY: '',
+            };
+            ws.send(JSON.stringify(data));
+        }
+    </script>
+</body>
+
+</html>

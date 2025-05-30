@@ -1,0 +1,88 @@
+-- 创建数据库
+CREATE DATABASE IF NOT EXISTS library_management
+    CHARACTER SET utf8mb4
+    COLLATE utf8mb4_unicode_ci;
+
+-- 使用数据库
+USE library_management;
+
+-- 用户表
+CREATE TABLE IF NOT EXISTS user (
+    user_id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    student_id VARCHAR(50) NOT NULL UNIQUE,
+    gender VARCHAR(10),
+    phone VARCHAR(20),
+    major VARCHAR(100),
+    college VARCHAR(100),
+    password VARCHAR(255) NOT NULL,
+    create_time DATETIME DEFAULT CURRENT_TIMESTAMP,
+    email VARCHAR(100),
+    avatar VARCHAR(255)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- 管理员表
+CREATE TABLE IF NOT EXISTS admin (
+    admin_id INT PRIMARY KEY AUTO_INCREMENT,
+    account VARCHAR(50) UNIQUE NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    phone VARCHAR(20),
+    avatar VARCHAR(255),
+    role VARCHAR(50)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- 图书表
+CREATE TABLE IF NOT EXISTS book (
+    book_id INT PRIMARY KEY AUTO_INCREMENT,
+    title VARCHAR(255) NOT NULL,
+    author VARCHAR(100),
+    isbn VARCHAR(20) UNIQUE,
+    publisher VARCHAR(100),
+    publish_date DATE,
+    category VARCHAR(50),
+    location VARCHAR(50),
+    status VARCHAR(20) DEFAULT 'AVAILABLE',
+    total_copies INT DEFAULT 1,
+    available_copies INT DEFAULT 1,
+    create_time DATETIME DEFAULT CURRENT_TIMESTAMP,
+    update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- 借阅记录表
+CREATE TABLE IF NOT EXISTS borrow_record (
+    record_id INT PRIMARY KEY AUTO_INCREMENT,
+    book_id INT NOT NULL,
+    user_id INT NOT NULL,
+    borrow_date DATETIME DEFAULT CURRENT_TIMESTAMP,
+    due_date DATETIME NOT NULL,
+    return_date DATETIME,
+    status VARCHAR(20) DEFAULT 'BORROWED',
+    create_time DATETIME DEFAULT CURRENT_TIMESTAMP,
+    update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (book_id) REFERENCES book(book_id),
+    FOREIGN KEY (user_id) REFERENCES user(user_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- 座位表
+CREATE TABLE IF NOT EXISTS seat (
+    seat_id INT PRIMARY KEY AUTO_INCREMENT,
+    seat_number VARCHAR(20) NOT NULL UNIQUE,
+    status VARCHAR(20) DEFAULT 'AVAILABLE',
+    location VARCHAR(50),
+    create_time DATETIME DEFAULT CURRENT_TIMESTAMP,
+    update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- 座位预约表
+CREATE TABLE IF NOT EXISTS seat_reservation (
+    reservation_id INT PRIMARY KEY AUTO_INCREMENT,
+    seat_id INT NOT NULL,
+    user_id INT NOT NULL,
+    start_time DATETIME NOT NULL,
+    end_time DATETIME NOT NULL,
+    status VARCHAR(20) DEFAULT 'RESERVED',
+    create_time DATETIME DEFAULT CURRENT_TIMESTAMP,
+    update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (seat_id) REFERENCES seat(seat_id),
+    FOREIGN KEY (user_id) REFERENCES user(user_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

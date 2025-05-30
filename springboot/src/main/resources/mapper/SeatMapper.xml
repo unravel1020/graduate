@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.example.springboot.mapper.SeatMapper">
+    <select id="findAll" resultType="org.example.springboot.entity.Seat">
+        SELECT * FROM seat
+        ORDER BY seat_number ASC
+    </select>
+
+    <select id="getById" resultType="org.example.springboot.entity.Seat">
+        SELECT * FROM seat WHERE id = #{id}
+    </select>
+
+    <select id="findBySeatNumber" resultType="org.example.springboot.entity.Seat">
+        SELECT * FROM seat WHERE seat_number = #{seatNumber}
+    </select>
+
+    <insert id="insert" parameterType="org.example.springboot.entity.Seat" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO seat (seat_number, status, create_time, update_time)
+        VALUES (#{seatNumber}, #{status}, NOW(), NOW())
+    </insert>
+
+    <update id="update" parameterType="org.example.springboot.entity.Seat">
+        UPDATE seat
+        SET status = #{status},
+            update_time = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM seat WHERE id = #{id}
+    </delete>
+
+    <select id="findAvailable" resultType="org.example.springboot.entity.Seat">
+        SELECT * FROM seat
+        WHERE status = 'AVAILABLE'
+        ORDER BY seat_number ASC
+    </select>
+</mapper> 

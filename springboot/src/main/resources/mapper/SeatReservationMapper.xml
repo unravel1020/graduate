@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.example.springboot.mapper.SeatReservationMapper">
+    
+    <select id="findAll" resultType="org.example.springboot.entity.SeatReservation">
+        SELECT * FROM seat_reservation
+        ORDER BY create_time DESC
+    </select>
+    
+    <select id="getById" resultType="org.example.springboot.entity.SeatReservation">
+        SELECT * FROM seat_reservation WHERE id = #{id}
+    </select>
+    
+    <select id="findByUserId" resultType="org.example.springboot.entity.SeatReservation">
+        SELECT * FROM seat_reservation WHERE user_id = #{userId}
+        ORDER BY create_time DESC
+    </select>
+    
+    <insert id="insert" parameterType="org.example.springboot.entity.SeatReservation" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO seat_reservation (user_id, seat_id, start_time, end_time, status, create_time, update_time)
+        VALUES (#{userId}, #{seatId}, #{startTime}, #{endTime}, #{status}, NOW(), NOW())
+    </insert>
+    
+    <update id="update" parameterType="org.example.springboot.entity.SeatReservation">
+        UPDATE seat_reservation
+        SET status = #{status},
+            update_time = NOW()
+        WHERE id = #{id}
+    </update>
+    
+    <delete id="deleteById">
+        DELETE FROM seat_reservation WHERE id = #{id}
+    </delete>
+    
+    <select id="findActive" resultType="org.example.springboot.entity.SeatReservation">
+        SELECT * FROM seat_reservation
+        WHERE status = 'ACTIVE'
+        AND end_time &gt; NOW()
+        ORDER BY end_time ASC
+    </select>
+    
+</mapper> 

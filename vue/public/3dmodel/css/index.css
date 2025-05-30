@@ -1,0 +1,385 @@
+.bg_header {
+    background: linear-gradient(to bottom, #010e58, #122e78);
+    width: 100%;
+    height: 108px;
+}
+
+.header {
+    margin: 0 auto;
+    width: 1920px;
+    display: flex;
+    background: url(../img/2.png) no-repeat;
+}
+
+.header .left {
+    display: flex;
+    width: 600px;
+    text-align: center;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+}
+
+.header .head-item {
+    background: url(../img/33333.png) 100% no-repeat;
+    background-size: 100% 100%;
+    color: #fff;
+    width: 107px;
+    height: 44px;
+    font-size: 13px;
+    text-align: center;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.header .center {
+    text-align: center;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 720px;
+    font-size: 28px;
+    color: #fff;
+    font-weight: 700;
+    height: 108px;
+}
+
+.header .center .head_title {
+    background: linear-gradient(to bottom, #ffffff, #99eeff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    line-height: 34px;
+}
+
+.header .right {
+    display: flex;
+    width: 600px;
+    text-align: center;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+}
+
+.main {
+    position: relative;
+    display: flex;
+    justify-content: space-between;
+    /*background: white;*/
+}
+
+.main .main_left {
+    width: 440px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.main .main_left .level_one {
+    margin-top: 20px;
+    color: white;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+}
+
+.main .main_left .level_one .block {
+    width: 126px;
+    height: 77px;
+    background: url(../img/10.png) 100% no-repeat;
+    margin-bottom: 20px;
+}
+
+.main .main_left .level_one .block .block_title {
+    line-height: 38px;
+    text-align: center;
+}
+
+.main .main_left .level_one .block .block_content {
+    line-height: 38px;
+    text-align: center;
+}
+
+.main .main_left .level_two {
+    margin-top: 10px;
+    width: 426px;
+    height: 252px;
+    background: url(../img/33.png) 100% no-repeat;
+}
+
+.main .main_left .level_two .level_two_title {
+    line-height: 58px;
+    margin-left: 60px;
+    font-size: 14px;
+    color: white;
+}
+.main .main_left .level_two .level_two_content .row_center{
+    line-height: 44px;
+    display: flex;
+    justify-content: space-around;
+    color: white;
+}
+.main .main_left .level_two .level_two_content .row_center .row_center_info{
+    width: 120px;
+    text-align: center;
+}
+.main .main_left .level_two .level_two_content {
+    display: flex;
+    flex-direction: column;
+}
+
+.main .main_left .level_three {
+    margin-top: 10px;
+    width: 427px;
+    height: 342px;
+    background: url(../img/7.png) 100% no-repeat;
+}
+
+.main .main_left .level_three .level_three_title {
+    line-height: 58px;
+    margin-left: 60px;
+    font-size: 14px;
+    color: white;
+}
+
+.main .main_left .level_three .level_three_content {
+    display: flex;
+    flex-direction: column;
+
+}
+
+.main .main_left .level_three .level_three_content .row_center {
+    line-height: 44px;
+    display: flex;
+    justify-content: space-around;
+    color: white;
+}
+
+.main .main_left .level_three .level_three_content .row_center .row_center_info {
+    width: 120px;
+    text-align: center;
+}
+
+.main .main_right {
+    width: 440px;
+    /*background: red;*/
+    justify-content: right;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.main .main_right .level_one {
+    margin-top: 20px;
+    width: 426px;
+    height: 252px;
+    background: url(../img/55.png) 100% no-repeat;
+}
+
+.main .main_right .level_one .level_one_title {
+    line-height: 64px;
+    margin-left: 40px;
+    font-size: 14px;
+    color: white;
+}
+
+.main .main_right .level_one .level_one_radio {
+    margin-left: 40px;
+    font-size: 14px;
+    color: white;
+}
+
+.main .main_right .level_one .level_one_content {
+    margin-left: 36px;
+    width: 354px;
+    display: flex;
+    flex-direction: column;
+    color: white;
+}
+
+.main .main_right .level_one .level_one_content .tab_one {
+    line-height: 40px;
+}
+
+.main .main_right .level_one .level_one_content .tab_two {
+   display: none;
+}
+
+.main .main_right .level_one .level_one_content .tab_two .road_property_search{
+    width: 280px;
+    height: 18px;
+    padding: 4px 11px;
+    outline: none;
+    margin: 0;
+    /*border: none;*/
+    /*background: none;*/
+    /*box-sizing: border-box;*/
+}
+.main .main_right .level_one .level_one_content .tab_two .search_button{
+    width: 40px;
+    height: 30px;
+}
+ul {
+    display: inline-block;
+    list-style: none;
+    margin-right: 80px;
+    margin-left: 70px;
+    color: red;
+    line-height: 30px;
+}
+
+.main .main_right .level_two {
+    height: 251px;
+    background: url(../img/5.png) 100% no-repeat;
+    margin-top: 10px;
+    width: 426px;
+}
+
+.main .main_right .level_two .level_two_title {
+    line-height: 56px;
+    font-size: 14px;
+    color: white;
+    margin-right: 40px;
+    text-align: right;
+}
+
+.main .main_right .level_two .level_two_content {
+    display: flex;
+    height: 186px;
+    justify-content: space-around;
+    align-items: center;
+}
+
+.main .main_right .level_two .level_two_content .road_info {
+    width: 115px;
+    height: 115px;
+    background: url(../img/555.png) 100% no-repeat;
+    display: flex;
+    flex-direction: column;
+    color: white;
+    text-align: center;
+}
+
+.main .main_right .level_two .level_two_content .road_info .road_num {
+    margin-top: 34px;
+}
+
+.main .main_right .level_two .level_two_content .road_info .road_name {
+    line-height: 40px;
+}
+
+.main .main_right .level_three {
+    width: 426px;
+    height: 341px;
+    background: url(../img/6.png) no-repeat;
+}
+
+.main .main_right .level_three .level_three_title {
+    line-height: 56px;
+    font-size: 14px;
+    color: white;
+    margin-right: 55px;
+    text-align: right;
+}
+
+.main .main_right .level_three .level_three_content {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+}
+
+.main .main_right .level_three .level_three_content .row_center_info .row_center_title {
+    line-height: 30px;
+    text-align: center;
+    color: white;
+}
+.show{
+    width: 1920px;
+    margin: 0 auto;
+    position: relative;
+}
+.container {
+    position: relative;
+    z-index: 1;
+
+}
+.container div {
+    display: inline-block;
+}
+.tool {
+    visibility: hidden;
+    margin-top: 5px;
+    margin-left: 1235px;
+    z-index: 2;
+    position: absolute;
+    display: inline-block;
+}
+
+.tool input {
+    width: 80px;
+    left: 20%;
+    padding: 0 30px;
+}
+
+.tool .decrease-btn,
+.tool .increase-btn {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 30px;
+    text-align: center;
+    cursor: pointer;
+}
+.tool .unit{
+    position:absolute;
+    right:20%;
+    font-size: 5px;
+    padding: 2px 0 10px;
+}
+.tool .submit{
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    padding: 0 10px;
+    width: 50px;
+    text-align: center;
+    cursor: pointer;
+    font-size: 5px;
+    align-items: center;
+    /*padding-bottom: 10px;*/
+}
+
+.tool .decrease-btn {
+    left: 0;
+}
+
+.tool .increase-btn {
+    right: 0;
+}
+.slider{
+    width: 180px;
+    margin-left: 550px;
+    z-index: 1;
+    position: absolute;
+}
+/*#myCanvas{*/
+/*    position: absolute;*/
+/*    background: url("../img/bg1.jpg") no-repeat;*/
+/*}*/
+
+#charts{
+    width: 380px;
+    height: 176px;
+}
+
+.myCol{
+    color: #f19f34;
+}
+
+#myVideo{
+    position: absolute;
+    background: url("../img/bg1.jpg") no-repeat;
+}
