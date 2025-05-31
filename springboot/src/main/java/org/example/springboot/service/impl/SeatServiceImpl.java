@@ -8,22 +8,23 @@ import org.example.springboot.exception.BusinessException;
 import org.example.springboot.mapper.SeatMapper;
 import org.example.springboot.mapper.SeatReservationMapper;
 import org.example.springboot.service.SeatService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 
 @Service
 public class SeatServiceImpl implements SeatService {
 
-    private final SeatMapper seatMapper;
-    private final SeatReservationMapper seatReservationMapper;
+    @Autowired
+    private SeatMapper seatMapper;
 
-    public SeatServiceImpl(SeatMapper seatMapper, SeatReservationMapper seatReservationMapper) {
-        this.seatMapper = seatMapper;
-        this.seatReservationMapper = seatReservationMapper;
-    }
+    @Autowired
+    private SeatReservationMapper reservationMapper;
 
     @Override
     public Seat findById(Long id) {
@@ -112,7 +113,7 @@ public class SeatServiceImpl implements SeatService {
         }
 
         // 检查用户是否有未结束的预约
-        List<SeatReservation> reservations = seatReservationMapper.findByUserId(reservation.getUserId());
+        List<SeatReservation> reservations = reservationMapper.findByUserId(reservation.getUserId());
         if (!reservations.isEmpty() && reservations.stream().anyMatch(r -> r.getEndTime() == null)) {
             throw new BusinessException(400, "您已有未结束的预约");
         }
@@ -120,7 +121,7 @@ public class SeatServiceImpl implements SeatService {
         // 创建预约记录
         reservation.setStartTime(LocalDateTime.now());
         reservation.setStatus(1); // 1: 预约中
-        seatReservationMapper.insert(reservation);
+        reservationMapper.insert(reservation);
 
         // 更新座位状态
         seat.setStatus(2); // 2: 已预约
@@ -131,7 +132,7 @@ public class SeatServiceImpl implements SeatService {
     @Override
     @Transactional
     public void cancelReservation(Long id) {
-        SeatReservation reservation = seatReservationMapper.findById(id);
+        SeatReservation reservation = reservationMapper.findById(id);
         if (reservation == null) {
             throw new BusinessException(404, "预约记录不存在");
         }
@@ -142,7 +143,7 @@ public class SeatServiceImpl implements SeatService {
         // 更新预约记录
         reservation.setEndTime(LocalDateTime.now());
         reservation.setStatus(2); // 2: 已取消
-        seatReservationMapper.update(reservation);
+        reservationMapper.update(reservation);
 
         // 更新座位状态
         Seat seat = seatMapper.findById(reservation.getSeatId());
@@ -153,6 +154,79 @@ public class SeatServiceImpl implements SeatService {
 
     @Override
     public List<SeatReservation> findReservationsByUserId(Long userId) {
-        return seatReservationMapper.findByUserId(userId);
+        return reservationMapper.findByUserId(userId);
+    }
+
+    @Override
+    public List<Seat> getAllSeats(String area, String date) {
+        return seatMapper.findAll(area, date);
+    }
+
+    @Override
+    public List<String> getSeatAreas() {
+        return seatMapper.findAllAreas();
+    }
+
+    @Override
+    public Map<String, Integer> getSeatStats(String date) {
+        List<Seat> seats = seatMapper.findAll(null, date);
+        Map<String, Integer> stats = new HashMap<>();
+        stats.put("totalSeats", seats.size());
+        stats.put("reservedSeats", (int) seats.stream().filter(s -> "reserved".equals(s.getStatus())).count());
+        stats.put("availableSeats", (int) seats.stream().filter(s -> "available".equals(s.getStatus())).count());
+        return stats;
+    }
+
+    @Override
+    @Transactional
+    public SeatReservation createReservation(SeatReservation reservation) {
+        // 检查座位是否可用
+        Seat seat = seatMapper.findById(reservation.getSeatId());
+        if (seat == null || !"available".equals(seat.getStatus())) {
+            throw new RuntimeException("座位不可用");
+        }
+
+        // 设置预约信息
+        reservation.setReserveTime(LocalDateTime.now());
+        reservation.setStatus("confirmed");
+        reservation.setCreateTime(LocalDateTime.now());
+        reservation.setUpdateTime(LocalDateTime.now());
+
+        // 保存预约记录
+        reservationMapper.insert(reservation);
+
+        // 更新座位状态
+        seat.setStatus("reserved");
+        seatMapper.update(seat);
+
+        return reservation;
+    }
+
+    @Override
+    @Transactional
+    public void cancelReservation(Long id) {
+        SeatReservation reservation = reservationMapper.findById(id);
+        if (reservation == null) {
+            throw new RuntimeException("预约记录不存在");
+        }
+
+        // 更新预约状态
+        reservation.setStatus("cancelled");
+        reservation.setUpdateTime(LocalDateTime.now());
+        reservationMapper.update(reservation);
+
+        // 更新座位状态
+        Seat seat = seatMapper.findById(reservation.getSeatId());
+        if (seat != null) {
+            seat.setStatus("available");
+            seatMapper.update(seat);
+        }
+    }
+
+    @Override
+    public List<SeatReservation> getMyReservations() {
+        // TODO: 从SecurityContext中获取当前用户ID
+        Long userId = 1L;
+        return reservationMapper.findByUserId(userId);
     }
 } 

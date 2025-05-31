@@ -6,12 +6,12 @@ import java.util.List;
 
 @Mapper
 public interface UserMapper {
-    User findByUsername(String username);
     User findById(Long id);
-    int insert(User user);
-    int update(User user);
+    User findByUsername(String username);
+    void insert(User user);
+    void update(User user);
+    void delete(Long id);
     List<User> findByRole(String role);
-    int deleteById(Long id);
     User getUser(String studentId);
     User login(String studentId, String password);
     User selectByStudentId(String studentId);

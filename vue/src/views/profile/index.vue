@@ -7,292 +7,255 @@
           <template #header>
             <div class="card-header">
               <span>个人信息</span>
-              <el-button type="primary" link @click="handleEdit">
-                编辑
-              </el-button>
+              <el-button type="primary" @click="showPasswordDialog = true">修改密码</el-button>
             </div>
           </template>
-          <div class="profile-info">
-            <div class="info-item">
-              <span class="label">用户名：</span>
-              <span>{{ userInfo.username }}</span>
-            </div>
-            <div class="info-item">
-              <span class="label">邮箱：</span>
-              <span>{{ userInfo.email }}</span>
-            </div>
-            <div class="info-item">
-              <span class="label">注册时间：</span>
-              <span>{{ userInfo.createTime }}</span>
+          <div class="user-info">
+            <el-avatar :size="64" :src="userInfo?.avatar || defaultAvatar" />
+            <div class="info">
+              <h3>{{ userInfo?.username || '未登录' }}</h3>
+              <p>角色：{{ userInfo?.role === 'admin' ? '管理员' : '普通用户' }}</p>
             </div>
           </div>
         </el-card>
       </el-col>
 
-      <!-- 借阅统计 -->
+      <!-- 我的预约卡片 -->
       <el-col :span="16">
-        <el-card class="stats-card">
+        <el-card class="reservation-card">
           <template #header>
             <div class="card-header">
-              <span>借阅统计</span>
+              <span>我的预约</span>
+              <el-button type="primary" @click="showReservationDialog = true">查看预约</el-button>
             </div>
           </template>
-          <el-row :gutter="20">
-            <el-col :span="8">
-              <div class="stat-item">
-                <div class="stat-value">{{ stats.totalBorrowed }}</div>
-                <div class="stat-label">总借阅数</div>
-              </div>
-            </el-col>
-            <el-col :span="8">
-              <div class="stat-item">
-                <div class="stat-value">{{ stats.currentBorrowed }}</div>
-                <div class="stat-label">当前借阅</div>
-              </div>
-            </el-col>
-            <el-col :span="8">
-              <div class="stat-item">
-                <div class="stat-value">{{ stats.overdue }}</div>
-                <div class="stat-label">逾期未还</div>
-              </div>
-            </el-col>
-          </el-row>
+          <div class="reservation-list">
+            <el-table :data="reservationList" style="width: 100%">
+              <el-table-column prop="seatName" label="座位" />
+              <el-table-column prop="startTime" label="开始时间" />
+              <el-table-column prop="endTime" label="结束时间" />
+              <el-table-column prop="status" label="状态">
+                <template #default="{ row }">
+                  <el-tag :type="row.status === 'active' ? 'success' : 'info'">
+                    {{ row.status === 'active' ? '进行中' : '已完成' }}
+                  </el-tag>
+                </template>
+              </el-table-column>
+              <el-table-column label="操作">
+                <template #default="{ row }">
+                  <el-button
+                    v-if="row.status === 'active'"
+                    type="danger"
+                    size="small"
+                    @click="handleCancelReservation(row)"
+                  >
+                    取消预约
+                  </el-button>
+                </template>
+              </el-table-column>
+            </el-table>
+          </div>
         </el-card>
       </el-col>
     </el-row>
 
-    <!-- 借阅记录 -->
-    <el-card class="records-card">
-      <template #header>
-        <div class="card-header">
-          <span>借阅记录</span>
-        </div>
-      </template>
-      <el-table :data="borrowRecords" style="width: 100%">
-        <el-table-column prop="bookTitle" label="书名" min-width="200" />
-        <el-table-column prop="borrowTime" label="借阅时间" width="180" />
-        <el-table-column prop="returnTime" label="应还时间" width="180" />
-        <el-table-column prop="status" label="状态" width="100">
-          <template #default="{ row }">
-            <el-tag :type="getStatusType(row.status)">
-              {{ row.status }}
-            </el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column label="操作" width="120">
-          <template #default="{ row }">
-            <el-button
-              v-if="row.status === '借阅中'"
-              type="primary"
-              size="small"
-              @click="handleReturn(row)"
-            >
-              归还
-            </el-button>
-          </template>
-        </el-table-column>
-      </el-table>
-    </el-card>
-
-    <!-- 编辑个人信息对话框 -->
+    <!-- 修改密码对话框 -->
     <el-dialog
-      v-model="dialogVisible"
-      title="编辑个人信息"
-      width="500px"
+      v-model="showPasswordDialog"
+      title="修改密码"
+      width="400px"
     >
       <el-form
-        ref="formRef"
-        :model="form"
-        :rules="rules"
-        label-width="80px"
+        ref="passwordFormRef"
+        :model="passwordForm"
+        :rules="passwordRules"
+        label-width="100px"
       >
-        <el-form-item label="邮箱" prop="email">
-          <el-input v-model="form.email" />
+        <el-form-item label="原密码" prop="oldPassword">
+          <el-input
+            v-model="passwordForm.oldPassword"
+            type="password"
+            show-password
+          />
         </el-form-item>
         <el-form-item label="新密码" prop="newPassword">
           <el-input
-            v-model="form.newPassword"
+            v-model="passwordForm.newPassword"
             type="password"
             show-password
-            placeholder="不修改请留空"
           />
         </el-form-item>
         <el-form-item label="确认密码" prop="confirmPassword">
           <el-input
-            v-model="form.confirmPassword"
+            v-model="passwordForm.confirmPassword"
             type="password"
             show-password
-            placeholder="不修改请留空"
           />
         </el-form-item>
       </el-form>
       <template #footer>
         <span class="dialog-footer">
-          <el-button @click="dialogVisible = false">取消</el-button>
-          <el-button type="primary" @click="handleSave">
-            保存
+          <el-button @click="showPasswordDialog = false">取消</el-button>
+          <el-button type="primary" @click="handleChangePassword">
+            确认
           </el-button>
         </span>
       </template>
+    </el-dialog>
+
+    <!-- 预约详情对话框 -->
+    <el-dialog
+      v-model="showReservationDialog"
+      title="预约详情"
+      width="800px"
+    >
+      <el-table :data="reservationList" style="width: 100%">
+        <el-table-column prop="seatName" label="座位" />
+        <el-table-column prop="startTime" label="开始时间" />
+        <el-table-column prop="endTime" label="结束时间" />
+        <el-table-column prop="status" label="状态">
+          <template #default="{ row }">
+            <el-tag :type="row.status === 'active' ? 'success' : 'info'">
+              {{ row.status === 'active' ? '进行中' : '已完成' }}
+            </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="操作">
+          <template #default="{ row }">
+            <el-button
+              v-if="row.status === 'active'"
+              type="danger"
+              size="small"
+              @click="handleCancelReservation(row)"
+            >
+              取消预约
+            </el-button>
+          </template>
+        </el-table-column>
+      </el-table>
     </el-dialog>
   </div>
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { getCurrentUser } from '@/api/auth'
-import { getBorrowRecords, returnBook } from '@/api/book'
+import { auth } from '@/utils/api'
+import { seats } from '@/utils/api'
 
 // 用户信息
 const userInfo = ref({
   username: '',
-  email: '',
-  createTime: ''
+  role: '',
+  avatar: ''
 })
+const defaultAvatar = 'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png'
 
-// 统计数据
-const stats = ref({
-  totalBorrowed: 0,
-  currentBorrowed: 0,
-  overdue: 0
-})
+// 预约列表
+const reservationList = ref([])
 
-// 借阅记录
-const borrowRecords = ref([])
+// 对话框显示状态
+const showPasswordDialog = ref(false)
+const showReservationDialog = ref(false)
 
-// 编辑表单
-const dialogVisible = ref(false)
-const formRef = ref(null)
-const form = reactive({
-  email: '',
+// 密码表单
+const passwordFormRef = ref(null)
+const passwordForm = ref({
+  oldPassword: '',
   newPassword: '',
   confirmPassword: ''
 })
 
-// 表单验证规则
-const validatePass = (rule, value, callback) => {
-  if (value === '') {
-    callback()
-  } else {
-    if (form.confirmPassword !== '') {
-      formRef.value?.validateField('confirmPassword')
-    }
-    callback()
-  }
-}
-
-const validatePass2 = (rule, value, callback) => {
-  if (value === '') {
-    callback()
-  } else if (value !== form.newPassword) {
-    callback(new Error('两次输入密码不一致!'))
-  } else {
-    callback()
-  }
-}
-
-const rules = {
-  email: [
-    { required: true, message: '请输入邮箱地址', trigger: 'blur' },
-    { type: 'email', message: '请输入正确的邮箱地址', trigger: 'blur' }
+// 密码验证规则
+const passwordRules = {
+  oldPassword: [
+    { required: true, message: '请输入原密码', trigger: 'blur' }
   ],
   newPassword: [
-    { validator: validatePass, trigger: 'blur' }
+    { required: true, message: '请输入新密码', trigger: 'blur' },
+    { min: 6, message: '密码长度不能小于6位', trigger: 'blur' }
   ],
   confirmPassword: [
-    { validator: validatePass2, trigger: 'blur' }
+    { required: true, message: '请确认密码', trigger: 'blur' },
+    {
+      validator: (rule, value, callback) => {
+        if (value !== passwordForm.value.newPassword) {
+          callback(new Error('两次输入的密码不一致'))
+        } else {
+          callback()
+        }
+      },
+      trigger: 'blur'
+    }
   ]
 }
 
 // 获取用户信息
 const fetchUserInfo = async () => {
   try {
-    const res = await getCurrentUser()
-    userInfo.value = res.data
-    form.email = res.data.email
+    const res = await auth.getProfile()
+    if (res.data) {
+      userInfo.value = res.data
+    }
   } catch (error) {
     console.error('获取用户信息失败:', error)
   }
 }
 
-// 获取借阅记录
-const fetchBorrowRecords = async () => {
+// 获取预约列表
+const fetchReservations = async () => {
   try {
-    const res = await getBorrowRecords()
-    borrowRecords.value = res.data.list
-    
-    // 计算统计数据
-    stats.value = {
-      totalBorrowed: res.data.total,
-      currentBorrowed: res.data.list.filter(record => record.status === '借阅中').length,
-      overdue: res.data.list.filter(record => record.status === '逾期未还').length
-    }
+    const res = await seats.getReservations()
+    reservationList.value = res.data
   } catch (error) {
-    console.error('获取借阅记录失败:', error)
+    console.error('获取预约列表失败:', error)
   }
 }
 
-// 获取状态标签类型
-const getStatusType = (status) => {
-  switch (status) {
-    case '借阅中':
-      return 'primary'
-    case '已归还':
-      return 'success'
-    case '逾期未还':
-      return 'danger'
-    default:
-      return 'info'
-  }
-}
-
-// 编辑个人信息
-const handleEdit = () => {
-  dialogVisible.value = true
-}
-
-// 保存个人信息
-const handleSave = async () => {
-  if (!formRef.value) return
+// 修改密码
+const handleChangePassword = async () => {
+  if (!passwordFormRef.value) return
   
   try {
-    await formRef.value.validate()
-    // TODO: 调用更新用户信息API
-    ElMessage.success('保存成功')
-    dialogVisible.value = false
-    fetchUserInfo()
+    await passwordFormRef.value.validate()
+    await auth.changePassword(passwordForm.value)
+    ElMessage.success('密码修改成功')
+    showPasswordDialog.value = false
+    passwordForm.value = {
+      oldPassword: '',
+      newPassword: '',
+      confirmPassword: ''
+    }
   } catch (error) {
-    console.error('保存失败:', error)
-  }
-}
-
-// 归还图书
-const handleReturn = async (row) => {
-  try {
-    await ElMessageBox.confirm(
-      `确定要归还《${row.bookTitle}》吗？`,
-      '归还确认',
-      {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }
-    )
-    
-    await returnBook(row.id)
-    ElMessage.success('归还成功')
-    fetchBorrowRecords()
-  } catch (error) {
-    if (error !== 'cancel') {
-      console.error('归还失败:', error)
+    if (error.message) {
+      ElMessage.error(error.message)
     }
   }
 }
 
+// 取消预约
+const handleCancelReservation = async (row) => {
+  try {
+    await ElMessageBox.confirm('确定要取消该预约吗？', '提示', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning'
+    })
+    
+    await seats.cancelReservation(row.id)
+    ElMessage.success('预约取消成功')
+    fetchReservations()
+  } catch (error) {
+    if (error !== 'cancel') {
+      console.error('取消预约失败:', error)
+    }
+  }
+}
+
+// 初始化
 onMounted(() => {
   fetchUserInfo()
-  fetchBorrowRecords()
+  fetchReservations()
 })
 </script>
 
@@ -302,8 +265,7 @@ onMounted(() => {
 }
 
 .profile-card,
-.stats-card,
-.records-card {
+.reservation-card {
   margin-bottom: 20px;
 }
 
@@ -313,34 +275,29 @@ onMounted(() => {
   align-items: center;
 }
 
-.profile-info {
-  .info-item {
-    margin-bottom: 15px;
-    
-    .label {
-      font-weight: bold;
-      margin-right: 10px;
-      color: var(--text-color);
-    }
-  }
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 20px;
 }
 
-.stat-item {
-  text-align: center;
-  padding: 20px;
-  background-color: var(--background-color);
-  border-radius: 8px;
-  
-  .stat-value {
-    font-size: 24px;
-    font-weight: bold;
-    color: var(--text-color);
-  }
-  
-  .stat-label {
-    font-size: 14px;
-    color: var(--text-color-secondary);
-    margin-top: 5px;
-  }
+.info h3 {
+  margin: 0 0 10px 0;
+  font-size: 18px;
+}
+
+.info p {
+  margin: 0;
+  color: #666;
+}
+
+.reservation-list {
+  margin-top: 20px;
+}
+
+.dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
 }
 </style> 

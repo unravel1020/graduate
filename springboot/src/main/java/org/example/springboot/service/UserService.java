@@ -8,6 +8,6 @@ public interface UserService {
     User register(User user);
     User findById(Long id);
     List<User> findByRole(String role);
-    boolean update(User user);
-    boolean deleteById(Long id);
+    void update(User user);
+    void delete(Long id);
 } 

@@ -6,11 +6,12 @@ import java.time.LocalDateTime;
 @Data
 public class SeatReservation {
     private Long id;
-    private Long userId;
     private Long seatId;
-    private LocalDateTime reservationTime;
+    private Long userId;
+    private LocalDateTime reserveTime;
     private LocalDateTime startTime;
     private LocalDateTime endTime;
-    private Integer status;    // 1:预约中 2:使用中 3:已结束
+    private String status;  // pending, confirmed, cancelled, completed
     private LocalDateTime createTime;
+    private LocalDateTime updateTime;
 } 

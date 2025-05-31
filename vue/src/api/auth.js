@@ -2,10 +2,14 @@ import request from '@/utils/request'
 
 // 登录
 export function login(data) {
-  return request({
-    url: '/api/auth/login',
-    method: 'post',
-    data
+  return Promise.resolve({
+    data: {
+      code: 200,
+      message: '操作成功',
+      data: {
+        token: 'mock-token'
+      }
+    }
   })
 }
 

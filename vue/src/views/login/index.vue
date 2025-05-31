@@ -83,10 +83,10 @@ const handleLogin = async () => {
     const res = await login(form)
     console.log('Login response:', res)
     
-    if (res.data && res.data.token) {
-      localStorage.setItem('token', res.data.token)
+    if (res.data && res.data.data && res.data.data.token) {
+      localStorage.setItem('token', res.data.data.token)
       ElMessage.success('登录成功')
-      router.push('/')
+      router.push('/books')
     } else {
       ElMessage.error('登录失败：未获取到token')
     }

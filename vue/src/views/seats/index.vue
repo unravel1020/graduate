@@ -50,64 +50,31 @@
       <template #header>
         <div class="card-header">
           <span>座位列表</span>
-          <div class="header-actions">
-            <el-select v-model="selectedArea" placeholder="选择区域" @change="handleAreaChange">
-              <el-option
-                v-for="area in areas"
-                :key="area"
-                :label="area"
-                :value="area"
-              />
-            </el-select>
-            <el-radio-group v-model="viewMode" size="small">
-              <el-radio-button label="grid">网格视图</el-radio-button>
-              <el-radio-button label="list">列表视图</el-radio-button>
-            </el-radio-group>
-          </div>
+          <el-select v-model="areaFilter" placeholder="选择区域" @change="handleAreaChange">
+            <el-option label="全部区域" value="" />
+            <el-option label="A区" value="A" />
+            <el-option label="B区" value="B" />
+            <el-option label="C区" value="C" />
+          </el-select>
         </div>
       </template>
 
-      <!-- 网格视图 -->
-      <div v-if="viewMode === 'grid'" class="seats-grid">
-        <el-card
-          v-for="seat in seats"
-          :key="seat.id"
-          class="seat-card"
-          :class="{ 'is-reserved': seat.status === 1 }"
-          @click="handleSeatClick(seat)"
-        >
-          <div class="seat-info">
-            <div class="seat-number">{{ seat.seatNumber }}</div>
-            <div class="seat-status">
-              <el-tag :type="getStatusType(seat.status)">
-                {{ getStatusText(seat.status) }}
-              </el-tag>
-            </div>
-          </div>
-        </el-card>
-      </div>
-
-      <!-- 列表视图 -->
-      <el-table
-        v-else
-        :data="seats"
-        style="width: 100%"
-      >
-        <el-table-column prop="seatNumber" label="座位号" width="120" />
-        <el-table-column prop="area" label="区域" width="120" />
-        <el-table-column prop="status" label="状态" width="120">
+      <el-table :data="seats" style="width: 100%" v-loading="loading">
+        <el-table-column prop="id" label="ID" width="80" />
+        <el-table-column prop="number" label="座位号" />
+        <el-table-column prop="area" label="区域" />
+        <el-table-column prop="status" label="状态">
           <template #default="{ row }">
-            <el-tag :type="getStatusType(row.status)">
-              {{ getStatusText(row.status) }}
+            <el-tag :type="row.status === 'available' ? 'success' : 'danger'">
+              {{ row.status === 'available' ? '可预约' : '已预约' }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="120">
+        <el-table-column label="操作" width="200">
           <template #default="{ row }">
             <el-button
-              v-if="row.status === 0"
               type="primary"
-              size="small"
+              :disabled="row.status !== 'available'"
               @click="handleReserve(row)"
             >
               预约
@@ -116,8 +83,7 @@
         </el-table-column>
       </el-table>
 
-      <!-- 分页 -->
-      <div class="pagination-container">
+      <div class="pagination">
         <el-pagination
           v-model:current-page="currentPage"
           v-model:page-size="pageSize"
@@ -167,7 +133,7 @@
     <el-dialog
       v-model="dialogVisible"
       title="预约座位"
-      width="500px"
+      width="400px"
     >
       <el-form
         ref="formRef"
@@ -176,25 +142,22 @@
         label-width="80px"
       >
         <el-form-item label="座位号">
-          <span>{{ selectedSeat?.seatNumber }}</span>
+          <span>{{ form.seatNumber }}</span>
         </el-form-item>
-        <el-form-item label="日期">
-          <span>{{ formatDate(selectedDate) }}</span>
-        </el-form-item>
-        <el-form-item label="时间段" prop="timeSlot">
-          <el-select v-model="form.timeSlot" placeholder="请选择时间段">
-            <el-option label="上午 (8:00-12:00)" value="morning" />
-            <el-option label="下午 (13:00-17:00)" value="afternoon" />
-            <el-option label="晚上 (18:00-22:00)" value="evening" />
-          </el-select>
+        <el-form-item label="预约时间" prop="time">
+          <el-date-picker
+            v-model="form.time"
+            type="datetime"
+            placeholder="选择预约时间"
+            :disabled-date="disabledDate"
+            :disabled-hours="disabledHours"
+          />
         </el-form-item>
       </el-form>
       <template #footer>
         <span class="dialog-footer">
           <el-button @click="dialogVisible = false">取消</el-button>
-          <el-button type="primary" @click="handleSubmit">
-            确认预约
-          </el-button>
+          <el-button type="primary" @click="handleSubmit">确定</el-button>
         </span>
       </template>
     </el-dialog>
@@ -202,7 +165,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, watch } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { getSeats, getSeatStats, reserveSeat, cancelReservation, getMyReservations, getSeatAreas } from '@/api/seat'
 
@@ -221,11 +184,8 @@ const stats = ref({
 
 // 座位列表
 const seats = ref([])
-const viewMode = ref('grid')
-const selectedArea = ref('')
-const areas = ref([])
-
-// 分页
+const loading = ref(false)
+const areaFilter = ref('')
 const currentPage = ref(1)
 const pageSize = ref(10)
 const total = ref(0)
@@ -235,31 +195,32 @@ const myReservations = ref([])
 
 // 预约表单
 const dialogVisible = ref(false)
-const selectedSeat = ref(null)
 const formRef = ref(null)
 const form = reactive({
-  timeSlot: ''
+  seatNumber: '',
+  time: null
 })
 
 const rules = {
-  timeSlot: [
-    { required: true, message: '请选择时间段', trigger: 'change' }
-  ]
+  time: [{ required: true, message: '请选择预约时间', trigger: 'change' }]
 }
 
 // 获取座位列表
 const fetchSeats = async () => {
   try {
+    loading.value = true
     const res = await getSeats({
       pageNum: currentPage.value,
       pageSize: pageSize.value,
       date: formatDate(selectedDate.value),
-      area: selectedArea.value
+      area: areaFilter.value
     })
     seats.value = res.data.list
     total.value = res.data.total
   } catch (error) {
-    console.error('获取座位列表失败:', error)
+    ElMessage.error('获取座位列表失败')
+  } finally {
+    loading.value = false
   }
 }
 
@@ -289,7 +250,10 @@ const fetchMyReservations = async () => {
 const fetchAreas = async () => {
   try {
     const res = await getSeatAreas()
-    areas.value = res.data
+    // Assuming the response is an array of areas
+    // You might want to adjust this based on your actual API response
+    // For example, you can map the response to an array of options
+    // const areas = res.data.map(area => ({ label: area, value: area }))
   } catch (error) {
     console.error('获取区域列表失败:', error)
   }
@@ -334,35 +298,27 @@ const handleDateChange = () => {
   fetchStats()
 }
 
-// 区域变更
+// 区域筛选
 const handleAreaChange = () => {
   currentPage.value = 1
   fetchSeats()
 }
 
-// 分页大小变更
+// 分页
 const handleSizeChange = (val) => {
   pageSize.value = val
   fetchSeats()
 }
 
-// 页码变更
 const handleCurrentChange = (val) => {
   currentPage.value = val
   fetchSeats()
 }
 
-// 点击座位
-const handleSeatClick = (seat) => {
-  if (seat.status === 0) {
-    selectedSeat.value = seat
-    dialogVisible.value = true
-  }
-}
-
 // 预约座位
-const handleReserve = (seat) => {
-  selectedSeat.value = seat
+const handleReserve = (row) => {
+  form.seatNumber = row.number
+  form.time = null
   dialogVisible.value = true
 }
 
@@ -373,9 +329,9 @@ const handleSubmit = async () => {
   try {
     await formRef.value.validate()
     await reserveSeat({
-      seatId: selectedSeat.value.id,
+      seatId: row.id,
       date: formatDate(selectedDate.value),
-      timeSlot: form.timeSlot
+      time: form.time
     })
     ElMessage.success('预约成功')
     dialogVisible.value = false
@@ -383,7 +339,7 @@ const handleSubmit = async () => {
     fetchStats()
     fetchMyReservations()
   } catch (error) {
-    console.error('预约失败:', error)
+    ElMessage.error('预约失败')
   }
 }
 
@@ -410,6 +366,17 @@ const handleCancel = async (row) => {
       console.error('取消失败:', error)
     }
   }
+}
+
+// 禁用非工作时间
+const disabledHours = () => {
+  const hours = []
+  for (let i = 0; i < 24; i++) {
+    if (i < 8 || i > 22) {
+      hours.push(i)
+    }
+  }
+  return hours
 }
 
 onMounted(() => {
@@ -451,44 +418,7 @@ onMounted(() => {
   align-items: center;
 }
 
-.header-actions {
-  display: flex;
-  gap: 16px;
-  align-items: center;
-}
-
-.seats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 20px;
-  padding: 20px 0;
-}
-
-.seat-card {
-  cursor: pointer;
-  transition: all 0.3s;
-  
-  &:hover {
-    transform: translateY(-5px);
-  }
-  
-  &.is-reserved {
-    opacity: 0.7;
-    cursor: not-allowed;
-  }
-  
-  .seat-info {
-    text-align: center;
-    
-    .seat-number {
-      font-size: 18px;
-      font-weight: bold;
-      margin-bottom: 10px;
-    }
-  }
-}
-
-.pagination-container {
+.pagination {
   margin-top: 20px;
   display: flex;
   justify-content: flex-end;

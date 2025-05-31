@@ -16,15 +16,23 @@
         ORDER BY create_time DESC
     </select>
     
-    <insert id="insert" parameterType="org.example.springboot.entity.SeatReservation" useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO seat_reservation (user_id, seat_id, start_time, end_time, status, create_time, update_time)
-        VALUES (#{userId}, #{seatId}, #{startTime}, #{endTime}, #{status}, NOW(), NOW())
+    <insert id="insert" parameterType="org.example.springboot.entity.SeatReservation">
+        INSERT INTO seat_reservation (
+            seat_id, user_id, reserve_time, start_time, end_time,
+            status, create_time, update_time
+        ) VALUES (
+            #{seatId}, #{userId}, #{reserveTime}, #{startTime}, #{endTime},
+            #{status}, #{createTime}, #{updateTime}
+        )
     </insert>
     
     <update id="update" parameterType="org.example.springboot.entity.SeatReservation">
         UPDATE seat_reservation
-        SET status = #{status},
-            update_time = NOW()
+        <set>
+            <if test="status != null">status = #{status},</if>
+            <if test="endTime != null">end_time = #{endTime},</if>
+            update_time = #{updateTime}
+        </set>
         WHERE id = #{id}
     </update>
     
@@ -37,6 +45,10 @@
         WHERE status = 'ACTIVE'
         AND end_time &gt; NOW()
         ORDER BY end_time ASC
+    </select>
+    
+    <select id="findById" resultType="org.example.springboot.entity.SeatReservation">
+        SELECT * FROM seat_reservation WHERE id = #{id}
     </select>
     
 </mapper> 

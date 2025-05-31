@@ -3,12 +3,29 @@
 <mapper namespace="org.example.springboot.mapper.SeatMapper">
     <select id="findAll" resultType="org.example.springboot.entity.Seat">
         SELECT * FROM seat
-        ORDER BY seat_number ASC
+        <where>
+            <if test="area != null and area != ''">
+                AND area = #{area}
+            </if>
+        </where>
     </select>
 
-    <select id="getById" resultType="org.example.springboot.entity.Seat">
+    <select id="findById" resultType="org.example.springboot.entity.Seat">
         SELECT * FROM seat WHERE id = #{id}
     </select>
+
+    <select id="findAllAreas" resultType="string">
+        SELECT DISTINCT area FROM seat
+    </select>
+
+    <update id="update">
+        UPDATE seat
+        <set>
+            <if test="status != null">status = #{status},</if>
+            <if test="description != null">description = #{description}</if>
+        </set>
+        WHERE id = #{id}
+    </update>
 
     <select id="findBySeatNumber" resultType="org.example.springboot.entity.Seat">
         SELECT * FROM seat WHERE seat_number = #{seatNumber}
@@ -18,13 +35,6 @@
         INSERT INTO seat (seat_number, status, create_time, update_time)
         VALUES (#{seatNumber}, #{status}, NOW(), NOW())
     </insert>
-
-    <update id="update" parameterType="org.example.springboot.entity.Seat">
-        UPDATE seat
-        SET status = #{status},
-            update_time = NOW()
-        WHERE id = #{id}
-    </update>
 
     <delete id="deleteById">
         DELETE FROM seat WHERE id = #{id}

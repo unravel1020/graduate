@@ -2,7 +2,7 @@
   <div class="login-container">
     <div class="login-box">
       <h2>智慧图书馆系统</h2>
-      <form @submit.prevent="handleLogin">
+      <form @submit.prevent="handleLogin" ref="formRef">
         <div class="form-group">
           <label>用户名/学号</label>
           <input type="text" v-model="username" required>
@@ -24,24 +24,28 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { auth } from '../utils/api'
+import { ElMessage } from 'element-plus'
 
 const router = useRouter()
 const username = ref('')
 const password = ref('')
 const loading = ref(false)
 const error = ref('')
+const formRef = ref(null)
 
 const handleLogin = async () => {
+  if (!formRef.value) return
+  
   try {
-    loading.value = true
-    error.value = ''
-    const response = await auth.login(username.value, password.value)
-    localStorage.setItem('token', response.data)
+    await formRef.value.validate()
+    const res = await auth.login(username.value, password.value)
+    localStorage.setItem('token', res.data.token)
+    localStorage.setItem('userRole', res.data.user.role)
     router.push('/')
-  } catch (err) {
-    error.value = err.response?.data?.message || '登录失败'
-  } finally {
-    loading.value = false
+  } catch (error) {
+    if (error.message) {
+      ElMessage.error(error.message)
+    }
   }
 }
 </script>

@@ -5,6 +5,7 @@ import org.example.springboot.entity.Seat;
 import org.example.springboot.entity.SeatReservation;
 
 import java.util.List;
+import java.util.Map;
 
 public interface SeatService {
     Seat findById(Long id);
@@ -18,4 +19,10 @@ public interface SeatService {
     void reserve(SeatReservation reservation);
     void cancelReservation(Long id);
     List<SeatReservation> findReservationsByUserId(Long userId);
+    List<Seat> getAllSeats(String area, String date);
+    Seat getSeatById(Long id);
+    List<String> getSeatAreas();
+    Map<String, Integer> getSeatStats(String date);
+    SeatReservation createReservation(SeatReservation reservation);
+    List<SeatReservation> getMyReservations();
 } 
